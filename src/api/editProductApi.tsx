@@ -3,11 +3,17 @@ import { Product } from '../models/Product';
 
 const API_BASE_URL = 'https://my-json-server.typicode.com/ivanovskiviktor/dbplaceholder';
 
-export const simulateAddProduct = async (productData: any, lastProductId: number): Promise<Product> => {
+export const simulateEditProduct = async (productData: any, productId: number): Promise<Product> => {
     try {
-        await axios.post<Product>(
-            `${API_BASE_URL}/products`,
-            productData,
+
+        const updatedProductData = {
+            ...productData,
+            id: productId
+        };
+
+        await axios.put<Product>(
+            `${API_BASE_URL}/products/${productId}`,
+            updatedProductData,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -16,7 +22,7 @@ export const simulateAddProduct = async (productData: any, lastProductId: number
         );
 
         return {
-            id: lastProductId,
+            id: productId,
             ...productData,
         };
     } catch (error) {

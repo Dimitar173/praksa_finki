@@ -8,39 +8,58 @@ import { fetchCategories } from '../../api/categoriesApi';
 import { fetchStates } from '../../api/statesApi';
 import { simulateAddProduct } from '../../api/addProductApi';
 import { Product } from '../../models/Product';
+import { simulateEditProduct } from '../../api/editProductApi';
 
 interface AddProductDialogProps {
   isOpen: boolean;
   onClose: () => void;
   updateProducts: (newProduct: Product) => void;
   lastProductId: number;
+  id?: number;
+  product: Product | null;
+  updateEdittedProduct: (newProduct: Product) => void;
 }
 
-const initialValues = {
-  stateId: "",
-  categoryId: "",
-  title: "",
-  price: "",
-  picture: "",
-  description: ""
-};
-
-const AddProductDialog: React.FC<AddProductDialogProps> = ({ isOpen, onClose, updateProducts, lastProductId }) => {
+const AddProductDialog: React.FC<AddProductDialogProps> = ({ isOpen, onClose, updateProducts, lastProductId, id, product, updateEdittedProduct }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [states, setStates] = useState<State[]>([]);
-  const handleSubmit = async (values: any, { resetForm }: any) => {
-    try {
-      const newProduct = await simulateAddProduct(values, lastProductId);
+  const [initialValues, setInitialValues] = useState<{
+    stateId: number | string;
+    categoryId: number | string;
+    title: string;
+    price: number  | string;
+    picture: string;
+    description: string;
+  }>({
+    stateId: '',
+    categoryId: '',
+    title: "",
+    price: '',
+    picture: "",
+    description: ""
+  });
 
-      updateProducts(newProduct);
-
-      onClose();
-      resetForm();
-    } catch (error) {
-
-      console.error('Error submitting form:', error);
+  useEffect(() => {
+    if (id && product) {
+      setInitialValues({
+        stateId: product.stateId,
+        categoryId: product.categoryId,
+        title: product.title,
+        price: product.price,
+        picture: product.picture,
+        description: product.description || ""
+      });
+    } else {
+      setInitialValues({
+        stateId: '',
+        categoryId: '',
+        title: "",
+        price: '',
+        picture: "",
+        description: ""
+      });
     }
-  };
+  }, [product, id]);
 
   useEffect(() => {
     const getCategories = async () => {
@@ -65,20 +84,45 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({ isOpen, onClose, up
     getStates();
   }, []);
 
+  const handleSubmit = async (values: any, { resetForm }: any) => {
+    if(id) {
+      try {
+        const newProduct = await simulateEditProduct(values, id);
+        updateEdittedProduct(newProduct);
+  
+        onClose();
+        resetForm();
+      } catch (error) {
+        console.error('Error submitting form:', error);
+      }
+    } else {
+        try {
+          const newProduct = await simulateAddProduct(values, lastProductId);
+    
+          updateProducts(newProduct);
+    
+          onClose();
+          resetForm();
+        } catch (error) {
+          console.error('Error submitting form:', error);
+        }
+    }
+  };
 
   return (
     <div className={`modal ${isOpen ? 'open' : ''}`}>
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Create Product</h2>
+          <h2>{id ? 'Edit Product' : 'Create Product'}</h2>
           <button className="buttonClose" onClick={() => onClose()}><i className='fa fa-times'></i></button>
         </div>
         <Formik
           initialValues={initialValues}
           validationSchema={ValidationSchema(categories, states)}
           onSubmit={handleSubmit}
+          enableReinitialize={true} // Ensure Formik reinitializes with new values
         >
-          {({ values, handleChange }) => (
+          {({ values, handleChange } : any) => (
             <Form>
               <div className="form-row">
                 <div className="form-group">
@@ -157,7 +201,7 @@ const AddProductDialog: React.FC<AddProductDialogProps> = ({ isOpen, onClose, up
                 <ErrorMessage name="description" component="div" className="error-message" />
               </div>
               <div className='buttons-group'>
-                <button type="submit">Add</button>
+                <button type="submit">{id ? 'Edit' : 'Add'}</button>
                 <button type="button" onClick={() => onClose()}>Close</button>
               </div>
             </Form>

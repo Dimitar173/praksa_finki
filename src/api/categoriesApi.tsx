@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Category } from '../models/Category';
 
 
-const API_BASE_URL = 'https://my-json-server.typicode.com/drakulovski/dbplaceholder';
+const API_BASE_URL = 'https://my-json-server.typicode.com/ivanovskiviktor/dbplaceholder';
 
 export const fetchCategories = async (): Promise<Category[]> => {
     try {

@@ -3,22 +3,16 @@ import { Product } from '../models/Product';
 
 const API_BASE_URL = 'https://my-json-server.typicode.com/ivanovskiviktor/dbplaceholder';
 
-export const simulateAddProduct = async (productData: any, lastProductId: number): Promise<Product> => {
+export const simulateDeleteProduct = async (productId: number): Promise<void> => {
     try {
-        await axios.post<Product>(
-            `${API_BASE_URL}/products`,
-            productData,
+        await axios.delete<Product>(
+            `${API_BASE_URL}/products/${productId}`,
             {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             }
         );
-
-        return {
-            id: lastProductId,
-            ...productData,
-        };
     } catch (error) {
         throw new Error('Failed to add product');
     }

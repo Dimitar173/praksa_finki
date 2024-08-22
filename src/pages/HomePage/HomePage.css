@@ -60,6 +60,18 @@ body {
     align-items: center;
 }
 
+.image-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.alt-image {
+    width: 200px;
+    height: 200px;
+}
+
 .card-description {
     margin-top: 20px;
     display: flex;
@@ -79,7 +91,7 @@ body {
 
 .right-section {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     flex-direction: column;
 }
 
@@ -98,6 +110,33 @@ body {
     font-size: 16px;
     font-weight: 600;
     letter-spacing: 1.2px;
+}
+
+.delete-button {
+    background-color: red;
+    border: none;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 12px;
+}
+
+.edit-button {
+    background-color: green;
+    border: none;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 12px;
+    margin-right: 10px;
 }
 
 .button-wrapper {

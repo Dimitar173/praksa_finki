@@ -6,6 +6,7 @@ import "font-awesome/css/font-awesome.min.css";
 import './HomePage.css';
 import AddProductDialog from '../../dialogs/addProduct/AddProductDialog';
 import ProductDialog from '../../dialogs/viewProduct/ProductDialog';
+import { simulateDeleteProduct } from '../../api/deleteProductApi';
 
 
 const HomePage: React.FC = () => {
@@ -16,6 +17,7 @@ const HomePage: React.FC = () => {
     const [isAddProductDialogOpen, setAddProductDialogOpen] = useState<boolean>(false);
     const [isProductDialogOpen, setProductDialogOpen] = useState<boolean>(false);
     const [lastProductId, setLastProductId] = useState<number>(0);
+    const [selectedProductId, setSelectedProductId] = useState<number | undefined>(undefined)
 
     const toggleSortByTitle = (): void => {
         setSortByTitleAsc(!sortByTitleAsc);
@@ -55,7 +57,15 @@ const HomePage: React.FC = () => {
     //     setSelectedProduct(product);
     // };
 
-    const toggleAddProductDialog = (): void => {
+    const toggleAddProductDialog = (id?: number): void => {
+        if(id && !isAddProductDialogOpen){
+            setSelectedProductId(id)
+        } else if(!id && isAddProductDialogOpen) {
+            setSelectedProductId(undefined)
+            setSelectedProduct(null)
+        } else  {
+            setSelectedProduct(null)
+        }
         setAddProductDialogOpen(!isAddProductDialogOpen);
     };
 
@@ -63,6 +73,17 @@ const HomePage: React.FC = () => {
         setProducts((prevProducts) => [...prevProducts, newProduct]);
         setLastProductId(newProduct.id + 1);
     };
+
+    const updateEdittedProduct = (newProduct: Product): void => {
+        const index = products.findIndex(product => product.id === newProduct.id);
+
+        if (index !== -1) { //check if element is found in the list
+            const updatedProducts = [...products];
+            updatedProducts[index] = newProduct;
+    
+            setProducts(updatedProducts);
+        }
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -108,6 +129,20 @@ const HomePage: React.FC = () => {
         setSelectedProduct(null);
     };
 
+    const deleteProduct = async (productId : number) => {
+        try {
+          await simulateDeleteProduct(productId);
+    
+          //updateProducts(newProduct);
+    
+        //   onClose();
+        //   resetForm();
+        } catch (error) {
+    
+          console.error('Error submitting form:', error);
+        }
+      };
+
     return (
         <React.Fragment>
             <Navbar />
@@ -117,7 +152,7 @@ const HomePage: React.FC = () => {
                     <button className="button sortPrice" onClick={toggleSortByPrice}>Sort by Price &nbsp; {sortByPriceAsc ? <i className='fa fa-angle-up'></i> : <i className='fa fa-angle-down'></i>}</button>
                 </div>
                 <div className='addProduct'>
-                    <button className="button" onClick={toggleAddProductDialog}><i className="fa fa-plus-circle"></i>&nbsp; Add Product</button>
+                    <button className="button" onClick={() => toggleAddProductDialog()}><i className="fa fa-plus-circle"></i>&nbsp; Add Product</button>
                 </div>
             </div>
             <div className="container">
@@ -134,6 +169,9 @@ const HomePage: React.FC = () => {
                                 <span>{product.title}</span>
                                 <span>{product.stock ? "TRUE" : "FALSE"}</span>
                             </h3>
+                            <div className="image-container">
+                            <img src={product.picture} alt="" className='alt-image'/>
+                            </div>
                             <p className="card-price">{product.price}$</p>
                         </div>
                     ))}
@@ -147,8 +185,12 @@ const HomePage: React.FC = () => {
                                         <span>{selectedProduct.id} - {selectedProduct.title}</span>
                                     </div>
                                     <div className="right-section">
-                                        <span>{selectedProduct.stock ? "THE PRODUCT IS IN STOCK" : "THE PRODUCT IS OUT OF STOCK"}</span>
+                                        <span>{selectedProduct.stock ? "THE PRODUCT IS IN STOCK" : "THE PRODUCT IS OUT OF STOCK"}</span> {/* concurrent rendering */}
                                         <span>{selectedProduct.price}$</span>
+                                    </div>
+                                    <div>
+                                        <button className='edit-button' onClick={() => toggleAddProductDialog(selectedProduct.id)}><i className="fa fa-pencil"></i>&nbsp; Edit product</button>
+                                        <button className='delete-button' onClick={() => deleteProduct(selectedProduct.id)}><i className="fa fa-trash"></i>&nbsp; Delete product</button>
                                     </div>
                                 </h3>
                                 <div className="card-image">
@@ -162,7 +204,7 @@ const HomePage: React.FC = () => {
                     </div>
                 )}
             </div>
-            <AddProductDialog isOpen={isAddProductDialogOpen} onClose={toggleAddProductDialog} updateProducts={updateProducts} lastProductId={lastProductId} />
+            <AddProductDialog isOpen={isAddProductDialogOpen} onClose={toggleAddProductDialog} updateProducts={updateProducts} lastProductId={lastProductId} id={selectedProductId} product={selectedProduct} updateEdittedProduct={updateEdittedProduct}/>
             {window.innerWidth <= 576 && isProductDialogOpen && <ProductDialog product={selectedProduct} onClose={closeProductModal} />}
         </React.Fragment>
     );
